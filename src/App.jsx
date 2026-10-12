@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BookOpen, MousePointerClick, Mic, ChevronRight, ArrowLeft } from "lucide-react";
 import { LANGUAGES } from "./data/index.js";
-import Reader from "./components/Reader.jsx";
+import TvReader from "./components/TvReader.jsx";
+
+// ÍNDICE DE CREACIÓN
+// -- fecha de creación no registrada.
+// ÍNDICE DE MODIFICACIONES
+// ¿Qué querés aprender?
+// 01 12/10/2026 navegación por control remoto en selección de idioma.
+// Elegí un cuento
+// 01 12/10/2026 navegación por control remoto y elección de lectura en selección de cuento.
 
 /* ---------- 1. ¿Qué querés aprender? ---------- */
 function LanguagePick({ onPick }) {
@@ -19,9 +27,11 @@ function LanguagePick({ onPick }) {
       </p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
-        {Object.values(LANGUAGES).map((lang) => (
+        {Object.values(LANGUAGES).map((lang, index) => (
           <button
             key={lang.code}
+            data-tv-pick
+            autoFocus={index === 0}
             onClick={() => onPick(lang.code)}
             className="group rounded-2xl border border-slate-200 bg-white p-6 text-left transition hover:border-sky-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
           >
@@ -94,6 +104,8 @@ function StoryList({ lang, onPick, onBack }) {
           <li key={story.id}>
             <button
               onClick={() => onPick(story.id)}
+              data-tv-pick
+              autoFocus={i === 0}
               className="group flex w-full items-start gap-4 rounded-2xl border border-slate-200 bg-white p-5 text-left transition hover:border-sky-400 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
             >
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 font-serif text-sm text-slate-500 group-hover:bg-sky-100 group-hover:text-sky-700">
@@ -131,11 +143,30 @@ export default function App() {
   const lang = langCode ? LANGUAGES[langCode] : null;
   const story = lang && storyId ? lang.stories.find((s) => s.id === storyId) : null;
 
+  useEffect(() => {
+    if (story) return;
+    const onKey = (event) => {
+      if (event.key === "Escape" || event.key === "Backspace") {
+        if (langCode) { event.preventDefault(); setLangCode(null); }
+        return;
+      }
+      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      const choices = [...document.querySelectorAll("[data-tv-pick]")];
+      if (!choices.length) return;
+      event.preventDefault();
+      const index = choices.indexOf(document.activeElement);
+      const direction = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+      choices[Math.max(0, Math.min(choices.length - 1, index + direction))]?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [langCode, story]);
+
   if (!lang) return <LanguagePick onPick={setLangCode} />;
 
   if (!story) {
     return <StoryList lang={lang} onPick={setStoryId} onBack={() => setLangCode(null)} />;
   }
 
-  return <Reader key={`${lang.code}-${story.id}`} lang={lang} story={story} onExit={() => setStoryId(null)} />;
+  return <TvReader key={`${lang.code}-${story.id}`} lang={lang} story={story} onExit={() => setStoryId(null)} />;
 }
