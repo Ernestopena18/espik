@@ -1,10 +1,9 @@
 # Cuentos para aprender idiomas
 
 App de lectura para hispanohablantes. Elegís un idioma (inglés o francés),
-elegís un cuento y lo leés tocando cualquier palabra para ver su
-traducción, su pronunciación y ejemplos de uso. Un reproductor narra el
-cuento de corrido y podés dejar un silencio después de cada frase para
-repetirla en voz alta.
+elegís un cuento y después decidís si leer por frase o ver toda la página.
+Podés seleccionar cualquier palabra para ver su traducción, pronunciación y
+ejemplos de uso. El botón de reproducción lee la frase seleccionada.
 
 ## Correr en local
 
@@ -102,11 +101,34 @@ los datos del idioma, no del componente.
 
 ```
 src/
-  App.jsx              elegir idioma → elegir cuento → leer
-  components/Reader.jsx  el lector, el reproductor, los ajustes y la ficha
+  App.jsx                    elegir idioma y cuento
+  components/TvReader.jsx    lector para TV, frases, menú y ficha de palabra
+  data/storyImages.js        imágenes por frase disponibles
+  lib/useMusic.js            música instrumental generada en el navegador
   lib/tokenize.js      corta oraciones en palabras y les asigna lema
   lib/useSpeech.js     voces, lectura y subrayado palabra por palabra
 ```
+
+## Lectura en TV
+
+Abrí la app en el navegador del televisor y elegí el modo **Por frase** o
+**Toda la página**. La imagen ocupa la izquierda y el texto la derecha; en
+pantallas angostas, la imagen queda arriba. Las primeras cinco frases de
+«El gatito gris» tienen ilustración; se comparte entre francés e inglés.
+
+- **Izquierda/Derecha:** página anterior o siguiente.
+- **Abajo/Arriba:** frase siguiente o anterior. Desde la primera frase de
+  una página, Arriba vuelve a la última frase de la página anterior.
+- **Botón central:** reproduce o detiene la frase seleccionada.
+- **Doble Arriba:** abre el menú de palabra, voz, traducción, velocidad y música.
+- **Elegir palabra:** Izquierda/Derecha recorre las palabras; el botón central
+  abre la ficha con pronunciación y ejemplos.
+- **Escape/Volver:** cierra la ficha o el menú, o vuelve a elegir modo.
+
+La traducción disponible es español. Puede ocultarse o mostrarse antes del
+texto extranjero. La música instrumental se sintetiza localmente: los cuatro
+estilos ofrecen tres variaciones cada uno y no necesitan archivos ni
+servicios externos.
 
 ## Límites conocidos
 
@@ -120,5 +142,8 @@ src/
 - **Las voces del sistema no suenan a narrador.** El salto de calidad real
   es audio pregenerado con TTS neuronal, que además devuelve marcas de
   tiempo por palabra y resuelve el subrayado en todos los dispositivos.
-- **Las ilustraciones no están hechas.** Cada página reserva su lugar y
-  describe qué debería mostrar.
+- **Ilustraciones incompletas.** Solo las primeras cinco frases del cuento
+  de Mimi tienen imágenes; las demás escenas conservan una descripción.
+- **Audio del televisor.** La narración depende de las voces que exponga el
+  navegador del dispositivo mediante Web Speech; algunos televisores no
+  ofrecen voces para todos los acentos.
