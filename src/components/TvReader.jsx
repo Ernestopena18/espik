@@ -4,6 +4,7 @@ import {
   Music2, Underline, UserRound, Volume2, X,
 } from "lucide-react";
 import { useSpeech } from "../lib/useSpeech.js";
+import { isNativeAndroid } from "../lib/nativeSpeech.js";
 import { useMusic, MUSIC_STYLES, MUSIC_TRACKS } from "../lib/useMusic.js";
 import { sentenceImage } from "../data/storyImages.js";
 import "../tv.css";
@@ -15,6 +16,7 @@ import "../tv.css";
 // 02 12/10/2026 prueba de velocidad, pausa y repeticiones desde el modal de ajustes.
 // 03 12/10/2026 primera ilustración disponible en los cuatro cuentos restantes.
 // 04 12/10/2026 lector separado de la elección de modo y conectado a URLs de lectura.
+// 05 12/10/2026 lectura en voz alta mediante el motor nativo de Android TV.
 
 const MENU = [
   { id: "word", label: "Elegir palabra", icon: Underline },
@@ -154,7 +156,7 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
 
   const playCurrent = (restart = false) => {
     if (playing && !restart) { stopAudio(); return; }
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (!isNativeAndroid && (typeof window === "undefined" || !window.speechSynthesis)) return;
     stopAudio();
     const run = audioRun.current;
     const segments = [];

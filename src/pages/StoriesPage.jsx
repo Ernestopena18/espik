@@ -12,6 +12,7 @@ import NotFoundPage from "./NotFoundPage.jsx";
 // 01 12/10/2026 navegación por control remoto y elección de lectura en selección de cuento.
 // 02 12/10/2026 portadas con la primera ilustración de cada cuento.
 // 03 12/10/2026 catálogo por idioma separado en una ruta propia con enlaces a cada cuento.
+// 04 12/10/2026 regreso al inicio con el botón Volver de Android TV.
 
 const LEVEL_STYLE = {
   Fácil: "bg-emerald-50 text-emerald-700",

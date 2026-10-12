@@ -12,6 +12,7 @@ import { usePageTitle } from "../lib/usePageTitle.js";
 // 03 12/10/2026 presentación de las tres funciones principales en tarjetas horizontales.
 // 04 12/10/2026 tarjetas de idioma con colores de bandera.
 // 05 12/10/2026 inicio separado en una ruta propia con enlaces a catálogos por idioma.
+// 06 12/10/2026 salida con el botón Volver del control remoto en Android TV.
 
 function LanguageFlag({ code }) {
   if (code === "fr") return <svg viewBox="0 0 60 40" width="54" height="36" aria-hidden="true">

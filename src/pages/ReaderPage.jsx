@@ -7,6 +7,7 @@ import { usePageTitle } from "../lib/usePageTitle.js";
 // ÍNDICE DE CREACIÓN
 // 01 12/10/2026 ruta directa de lectura por frase o por página con validación del cuento.
 // ÍNDICE DE MODIFICACIONES
+// 01 12/10/2026 lectura empaquetada para Android TV con voz nativa y control remoto.
 
 export default function ReaderPage() {
   const { langCode, storyId, readingMode } = useParams();

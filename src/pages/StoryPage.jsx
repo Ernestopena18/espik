@@ -10,6 +10,7 @@ import "../tv.css";
 // ÍNDICE DE CREACIÓN
 // 01 12/10/2026 presentación del cuento con URL propia y elección del modo de lectura.
 // ÍNDICE DE MODIFICACIONES
+// 01 12/10/2026 regreso al catálogo con el botón Volver de Android TV.
 
 export default function StoryPage() {
   const { langCode, storyId } = useParams();

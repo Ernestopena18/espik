@@ -155,6 +155,32 @@ texto extranjero. La música instrumental se sintetiza localmente: los cuatro
 estilos ofrecen tres variaciones cada uno y no necesitan archivos ni
 servicios externos.
 
+## APK para Android TV / Google TV
+
+La carpeta `android/` contiene la app nativa creada con Capacitor. La APK lleva el
+contenido web y las ilustraciones incorporados. La voz usa el motor de texto a voz
+de Android, porque el WebView de algunas TV no expone Web Speech. El botón Volver
+del control cierra el menú o regresa una página; en el inicio sale de la app.
+
+La app aparece en el inicio de Android TV gracias a su banner y a la categoría
+`LEANBACK_LAUNCHER`. Requiere Android 7 o posterior y voces instaladas para los
+idiomas que se quieran escuchar. El audio y la navegación deben probarse en el
+modelo de TV concreto antes de distribuir la APK a otras personas.
+
+Para actualizar el contenido incluido en la APK:
+
+```bash
+npm ci
+npm run android:sync
+cd android
+./gradlew assembleDebug  # En Windows: .\gradlew.bat assembleDebug
+```
+
+El APK de prueba queda en `android/app/build/outputs/apk/debug/app-debug.apk`.
+GitHub Actions también lo genera en cada cambio de `main` como artefacto
+`espiktrainer-android-tv-debug`. Esta APK de prueba se puede instalar manualmente;
+para distribuirla formalmente hará falta firmar una versión de publicación.
+
 ## Límites conocidos
 
 - **El subrayado depende de `onboundary`.** Chrome y Edge de escritorio lo

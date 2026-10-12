@@ -4,6 +4,7 @@ import { usePageTitle } from "../lib/usePageTitle.js";
 // ÍNDICE DE CREACIÓN
 // 01 12/10/2026 página de error para rutas e identificadores de cuento desconocidos.
 // ÍNDICE DE MODIFICACIONES
+// 01 12/10/2026 botón Volver de Android TV conectado al historial de páginas.
 
 export default function NotFoundPage() {
   usePageTitle("Página no encontrada");

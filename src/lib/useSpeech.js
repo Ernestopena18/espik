@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { offsetsOf, tokenAtChar } from "./tokenize.js";
+import { isNativeAndroid, NativeSpeech } from "./nativeSpeech.js";
 
 /* La Web Speech API no expone el género de la voz, así que se deduce
    del nombre. Si no hay voz del género pedido, se imita con el tono. */
@@ -25,10 +26,17 @@ export function useSpeech(lang, tokenize) {
   const timers = useRef([]);
   const session = useRef(0);
   const gotBoundary = useRef(false);
+  const nativeHandles = useRef([]);
 
   useEffect(() => { setAccent(lang.accents[0][0]); }, [lang]);
 
   useEffect(() => {
+    if (isNativeAndroid) {
+      const load = () => NativeSpeech.getVoices().then(({ voices }) => setVoices(voices)).catch(() => setVoices([]));
+      const listener = NativeSpeech.addListener("voicesChanged", load);
+      load();
+      return () => { listener.then((handle) => handle.remove()); };
+    }
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     const load = () => {
       const v = window.speechSynthesis.getVoices();
@@ -58,21 +66,68 @@ export function useSpeech(lang, tokenize) {
   const stop = useCallback(() => {
     session.current++;
     clearTimers();
-    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    nativeHandles.current.forEach((handle) => handle.remove());
+    nativeHandles.current = [];
+    const stopped = isNativeAndroid ? NativeSpeech.stop().catch(() => {}) : undefined;
+    if (!isNativeAndroid && typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
     setPlaying(null);
+    return stopped;
   }, []);
 
   useEffect(() => () => stop(), [stop]);
 
   const speak = useCallback((text, { id, langTag, rate = 0.9, onEnd } = {}) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    stop();
+    if (!isNativeAndroid && (typeof window === "undefined" || !window.speechSynthesis)) return;
+    const stopped = stop();
     const mySession = session.current;
     const t0 = performance.now();
 
     const tokens = tokenize(text);
     const starts = offsetsOf(tokens);
     const pick = chooseVoice(langTag);
+
+    const finish = () => {
+      if (mySession !== session.current) return;
+      clearTimers();
+      nativeHandles.current.forEach((handle) => handle.remove());
+      nativeHandles.current = [];
+      setPlaying(null);
+      onEnd?.(performance.now() - t0);
+    };
+
+    if (isNativeAndroid) {
+      const requestId = String(mySession);
+      gotBoundary.current = false;
+      setPlaying({ id, index: null });
+      Promise.all([
+        NativeSpeech.addListener("speechProgress", (event) => {
+          if (event.requestId !== requestId || mySession !== session.current) return;
+          gotBoundary.current = true;
+          clearTimers();
+          const i = tokenAtChar(tokens, starts, event.charIndex);
+          if (i !== null) setPlaying({ id, index: i });
+        }),
+        NativeSpeech.addListener("speechFinished", (event) => {
+          if (event.requestId === requestId) finish();
+        }),
+        stopped,
+      ]).then(([progressHandle, finishedHandle]) => {
+        const handles = [progressHandle, finishedHandle];
+        if (mySession !== session.current) { handles.forEach((handle) => handle.remove()); return; }
+        nativeHandles.current = handles;
+        NativeSpeech.speak({ text, langTag, rate, pitch: gender === "m" ? 0.8 : 1.05, requestId }).catch(finish);
+      }).catch(finish);
+      timers.current.push(setTimeout(() => {
+        if (gotBoundary.current || mySession !== session.current) return;
+        let acc = 0;
+        tokens.forEach((token, i) => {
+          if (!token.w) return;
+          timers.current.push(setTimeout(() => setPlaying({ id, index: i }), acc));
+          acc += (95 + 62 * token.s.length) / rate;
+        });
+      }, 400));
+      return;
+    }
 
     const u = new SpeechSynthesisUtterance(text);
     u.lang = pick.voice?.lang || langTag;
@@ -89,12 +144,6 @@ export function useSpeech(lang, tokenize) {
       clearTimers();
       const i = tokenAtChar(tokens, starts, e.charIndex);
       if (i !== null) setPlaying({ id, index: i });
-    };
-    const finish = () => {
-      if (mySession !== session.current) return;
-      clearTimers();
-      setPlaying(null);
-      onEnd?.(performance.now() - t0);
     };
     u.onend = finish;
     u.onerror = finish;

@@ -1,4 +1,7 @@
-import { Route, Routes } from "react-router";
+import { useEffect } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router";
+import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
 import HomePage from "./pages/HomePage.jsx";
 import StoriesPage from "./pages/StoriesPage.jsx";
 import StoryPage from "./pages/StoryPage.jsx";
@@ -19,6 +22,24 @@ import NotFoundPage from "./pages/NotFoundPage.jsx";
 // 02 12/10/2026 portadas con la primera ilustración de cada cuento.
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let handle;
+    let disposed = false;
+    CapacitorApp.addListener("backButton", () => {
+      const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+      window.dispatchEvent(escape);
+      if (!escape.defaultPrevented) {
+        if (location.pathname === "/") CapacitorApp.exitApp();
+        else navigate(-1);
+      }
+    }).then((listener) => { if (disposed) listener.remove(); else handle = listener; });
+    return () => { disposed = true; handle?.remove(); };
+  }, [location.pathname, navigate]);
+
   return <Routes>
     <Route path="/" element={<HomePage />} />
     <Route path="/cuentos/:langCode" element={<StoriesPage />} />
