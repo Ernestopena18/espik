@@ -119,7 +119,9 @@ pantallas angostas, la imagen queda arriba. Las primeras cinco frases de
 - **Izquierda/Derecha:** página anterior o siguiente.
 - **Abajo/Arriba:** frase siguiente o anterior. Desde la primera frase de
   una página, Arriba vuelve a la última frase de la página anterior.
-- **Botón central:** reproduce o detiene la frase seleccionada.
+- **Botón central o toque en el texto:** reproduce o detiene la frase seleccionada.
+- **Flechas en pantalla:** las de los lados cambian de página; en modo Por frase,
+  las de arriba y abajo del texto cambian de frase. No hay barra inferior.
 - **Doble Arriba:** abre el menú de palabra, voz, traducción, velocidad y música.
 - **Elegir palabra:** Izquierda/Derecha recorre las palabras; el botón central
   abre la ficha con pronunciación y ejemplos.

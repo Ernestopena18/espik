@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, FastForward, Languages,
-  Music2, Pause, Play, Underline, UserRound, Volume2, X,
+  Music2, Underline, UserRound, Volume2, X,
 } from "lucide-react";
 import { useSpeech } from "../lib/useSpeech.js";
 import { useMusic, MUSIC_STYLES, MUSIC_TRACKS } from "../lib/useMusic.js";
@@ -11,6 +11,7 @@ import "../tv.css";
 // ÍNDICE DE CREACIÓN
 // 01 12/10/2026 creación del lector para TV con control remoto e imágenes por frase.
 // ÍNDICE DE MODIFICACIONES
+// 01 12/10/2026 flechas de navegación junto al texto y reproducción al presionarlo, sin barra inferior.
 
 const MENU = [
   { id: "word", label: "Elegir palabra", icon: Underline },
@@ -32,7 +33,7 @@ function WordText({ text, tokenize, upper, activeWord, onWord, readingIndex }) {
         type="button"
         className={`tv-word ${activeWord === current ? "tv-word-selected" : ""} ${readingIndex === i ? "tv-word-reading" : ""}`}
         onClick={(event) => { event.stopPropagation(); onWord(token); }}
-        aria-label={`Consultar ${token.s}`}
+        aria-label={`Palabra ${token.s}`}
       >
         {upper ? token.s.toLocaleUpperCase() : token.s}
       </button>
@@ -206,6 +207,11 @@ export default function TvReader({ lang, story, onExit }) {
     speakSegment(0);
   };
 
+  const toggleFromText = () => {
+    rootRef.current?.focus();
+    playCurrent();
+  };
+
   const showWord = (token) => {
     stopAudio();
     setWord({ lemma: token.lemma, surface: token.s });
@@ -306,33 +312,31 @@ export default function TvReader({ lang, story, onExit }) {
         <button className="tv-menu-trigger" onClick={() => setMenuOpen(true)}>Opciones ↑ ↑</button>
       </header>
 
-      <main className="tv-stage">
-        <div className="tv-image-wrap">
-          {image ? <><div className="tv-image-backdrop" style={{ backgroundImage: `url(${image})` }} aria-hidden="true" /><img src={image} alt={`Ilustración de: ${item[1]}`} /></> : <div className="tv-image-pending"><span>Ilustración en preparación</span><p>{pageData.illustration}</p></div>}
-          <span className="tv-scene-count">Frase {sentence + 1} de {pageData.sentences.length}</span>
+      <main className="tv-reading-area">
+        <button className="tv-page-arrow" onClick={() => movePage(-1)} disabled={page === 0} aria-label="Página anterior"><ChevronLeft /></button>
+        <div className="tv-stage">
+          <div className="tv-image-wrap">
+            {image ? <><div className="tv-image-backdrop" style={{ backgroundImage: `url(${image})` }} aria-hidden="true" /><img src={image} alt={`Ilustración de: ${item[1]}`} /></> : <div className="tv-image-pending"><span>Ilustración en preparación</span><p>{pageData.illustration}</p></div>}
+            <span className="tv-scene-count">Frase {sentence + 1} de {pageData.sentences.length}</span>
+          </div>
+          <div className={`tv-text-column ${readingMode === "page" ? "tv-text-column-page" : ""}`}>
+            {readingMode === "phrase" && <button className="tv-sentence-arrow" onClick={() => moveSentence(-1)} disabled={page === 0 && sentence === 0} aria-label="Frase anterior">↑</button>}
+            <section className={`tv-text-panel ${readingMode === "page" ? "tv-page-mode" : "tv-phrase-mode"}`} aria-label="Texto del cuento" onClick={readingMode === "phrase" && !wordSelection ? toggleFromText : undefined}>
+              {readingMode === "phrase" ? (
+                <Sentence item={item} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection ? wordIndex : null} onWord={wordSelection ? showWord : toggleFromText} readingIndex={readingIndex} />
+              ) : pageData.sentences.map((line, i) => (
+                <div key={i} className={`tv-page-line ${i === sentence ? "tv-page-line-active" : ""}`} onClick={() => i === sentence ? toggleFromText() : select(page, i)}>
+                  <span className="tv-line-number">{i + 1}</span>
+                  <div><Sentence item={line} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection && i === sentence ? wordIndex : null} onWord={wordSelection && i === sentence ? showWord : () => i === sentence ? toggleFromText() : select(page, i)} readingIndex={i === sentence ? readingIndex : null} /></div>
+                </div>
+              ))}
+              {wordSelection && <p className="tv-word-hint">Elegí una palabra con ← → y presioná el botón central. Esc para salir.</p>}
+            </section>
+            {readingMode === "phrase" && <button className="tv-sentence-arrow" onClick={() => moveSentence(1)} disabled={page === story.pages.length - 1 && sentence === pageData.sentences.length - 1} aria-label="Frase siguiente">↓</button>}
+          </div>
         </div>
-        <section className={`tv-text-panel ${readingMode === "page" ? "tv-page-mode" : ""}`} aria-label="Texto del cuento">
-          {readingMode === "phrase" ? (
-            <Sentence item={item} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection ? wordIndex : null} onWord={showWord} readingIndex={readingIndex} />
-          ) : pageData.sentences.map((line, i) => (
-            <div key={i} className={`tv-page-line ${i === sentence ? "tv-page-line-active" : ""}`} onClick={() => select(page, i)}>
-              <span className="tv-line-number">{i + 1}</span>
-              <div><Sentence item={line} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection && i === sentence ? wordIndex : null} onWord={showWord} readingIndex={i === sentence ? readingIndex : null} /></div>
-            </div>
-          ))}
-          {wordSelection && <p className="tv-word-hint">Elegí una palabra con ← → y presioná el botón central. Esc para salir.</p>}
-        </section>
+        <button className="tv-page-arrow" onClick={() => movePage(1)} disabled={page === story.pages.length - 1} aria-label="Página siguiente"><ChevronRight /></button>
       </main>
-
-      <footer className="tv-footer">
-        <button onClick={() => movePage(-1)} disabled={page === 0}><ChevronLeft /> Página anterior</button>
-        <div className="tv-play-controls">
-          <button onClick={() => moveSentence(-1)} aria-label="Frase anterior">↑</button>
-          <button className="tv-play" onClick={playCurrent} aria-label={playing ? "Detener frase" : "Reproducir frase"}>{playing ? <Pause fill="currentColor" /> : <Play fill="currentColor" />}</button>
-          <button onClick={() => moveSentence(1)} aria-label="Frase siguiente">↓</button>
-        </div>
-        <button onClick={() => movePage(1)} disabled={page === story.pages.length - 1}>Página siguiente <ChevronRight /></button>
-      </footer>
 
       {menuOpen && <div className="tv-menu-backdrop" onClick={() => { setMenuOpen(false); setPanel(null); }}>
         <nav className="tv-menu" aria-label="Opciones de lectura" onClick={(e) => e.stopPropagation()}>

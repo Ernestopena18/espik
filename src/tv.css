@@ -4,13 +4,17 @@
 .tv-reader button:focus-visible, .tv-choice button:focus-visible, .tv-reader input:focus-visible {
   outline: 4px solid #0284c7; outline-offset: 4px;
 }
-.tv-header, .tv-footer { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.1rem 4vw; }
+.tv-header { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.1rem 4vw; }
 .tv-header { border-bottom: 1px solid #dbe4ed; background: white; }
 .tv-header > div { text-align: center; }
 .tv-header strong { display: block; font: 600 clamp(1.2rem, 1.6vw, 2rem) Georgia, serif; }
 .tv-header span { display: block; color: #64748b; font-size: clamp(.85rem, 1vw, 1.1rem); }
 .tv-back, .tv-menu-trigger { border: 1px solid #cbd5e1; border-radius: .8rem; padding: .65rem 1rem; background: white; display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; }
-.tv-stage { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 2vw; align-items: stretch; margin: 2vw 4vw; min-height: min(67vh, 780px); }
+.tv-reading-area { display: grid; grid-template-columns: clamp(3.5rem, 5vw, 5rem) minmax(0, 1fr) clamp(3.5rem, 5vw, 5rem); align-items: stretch; gap: .6rem; margin: 2vw 2vw 3vw; }
+.tv-stage { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr); gap: 2vw; align-items: stretch; min-height: min(67vh, 780px); }
+.tv-page-arrow { align-self: center; justify-self: center; display: grid; place-items: center; width: clamp(3.25rem, 4vw, 4.5rem); height: clamp(4.5rem, 6vw, 6rem); border: 1px solid #cbd5e1; border-radius: 1rem; background: white; color: #0369a1; box-shadow: 0 8px 24px #0f172a15; }
+.tv-page-arrow svg { width: 2.5rem; height: 2.5rem; }
+.tv-page-arrow:disabled, .tv-sentence-arrow:disabled { opacity: .3; cursor: default; }
 .tv-image-wrap { position: relative; overflow: hidden; border-radius: 1.5rem; border: 1px solid #dbe4ed; background: linear-gradient(135deg, #f4e5d1, #dbeafe); display: flex; align-items: center; justify-content: center; }
 .tv-image-backdrop { position: absolute; inset: -2rem; background-size: cover; background-position: center; filter: blur(2rem) brightness(.9); opacity: .75; }
 .tv-image-wrap img { position: relative; display: block; width: 100%; height: 100%; max-height: min(67vh, 780px); object-fit: contain; }
@@ -18,7 +22,12 @@
 .tv-image-pending { padding: 3rem; max-width: 30rem; text-align: center; color: #64748b; }
 .tv-image-pending span { font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: .8rem; }
 .tv-image-pending p { margin-top: 1rem; font: italic clamp(1.3rem, 2vw, 2.2rem) Georgia, serif; }
-.tv-text-panel { background: white; border: 1px solid #dbe4ed; border-radius: 1.5rem; padding: clamp(1.5rem, 3vw, 4rem); display: flex; flex-direction: column; justify-content: center; overflow: auto; }
+.tv-text-column { display: grid; grid-template-rows: 3.5rem minmax(0, 1fr) 3.5rem; min-width: 0; }
+.tv-text-column-page { display: block; min-height: 0; }
+.tv-sentence-arrow { justify-self: center; width: 5rem; height: 3rem; border: 1px solid #cbd5e1; border-radius: .9rem; background: white; color: #0369a1; font-size: 2rem; line-height: 1; box-shadow: 0 5px 18px #0f172a12; }
+.tv-text-panel { background: white; border: 1px solid #dbe4ed; border-radius: 1.5rem; padding: clamp(1.5rem, 3vw, 4rem); display: flex; flex-direction: column; justify-content: center; overflow: auto; min-height: 0; }
+.tv-phrase-mode { cursor: pointer; }
+.tv-phrase-mode:hover { border-color: #7dd3fc; }
 .tv-translation, .tv-target { font: clamp(1.8rem, 2.8vw, 3.25rem)/1.35 Georgia, serif; margin: 0; }
 .tv-translation { color: #0ea5e9; font-style: italic; margin-bottom: 1.25rem; }
 .tv-target { color: #1e293b; }
@@ -33,12 +42,6 @@
 .tv-page-line .tv-translation, .tv-page-line .tv-target { font-size: clamp(1.15rem, 1.6vw, 1.8rem); line-height: 1.35; }
 .tv-page-line .tv-translation { margin-bottom: .1rem; }
 .tv-word-hint { margin-top: 1rem; border-radius: .7rem; padding: .65rem 1rem; background: #fef9c3; color: #713f12; font-size: 1rem; }
-.tv-footer { border-top: 1px solid #dbe4ed; background: white; }
-.tv-footer button { border: 1px solid #cbd5e1; background: white; border-radius: .8rem; padding: .65rem 1rem; display: inline-flex; align-items: center; gap: .35rem; font-weight: 600; }
-.tv-footer button:disabled { opacity: .4; cursor: default; }
-.tv-play-controls { display: flex; align-items: center; gap: .75rem; }
-.tv-play-controls button { min-width: 3rem; min-height: 3rem; justify-content: center; font-size: 1.5rem; }
-.tv-footer .tv-play { min-width: 4.3rem; min-height: 4.3rem; border-radius: 50%; justify-content: center; background: #0284c7; color: white; border-color: #0284c7; }
 .tv-choice { padding: 3vw 4vw; }
 .tv-choice-content { max-width: 75rem; margin: 7vh auto; text-align: center; }
 .tv-eyebrow { color: #e11d48; text-transform: uppercase; letter-spacing: .17em; font-size: .85rem; font-weight: 700; }
@@ -77,12 +80,15 @@
 .tv-examples li { display: flex; gap: .75rem; background: #f8fafc; border-radius: .7rem; padding: .7rem; }
 .tv-examples em { color: #0ea5e9; }
 @media (max-width: 900px) {
-  .tv-stage { grid-template-columns: 1fr; gap: 1rem; margin: 1rem; }
+  .tv-reading-area { grid-template-columns: 3rem minmax(0, 1fr) 3rem; gap: .3rem; margin: 1rem .5rem; }
+  .tv-stage { grid-template-columns: 1fr; gap: 1rem; }
+  .tv-page-arrow { width: 2.75rem; height: 4rem; }
+  .tv-page-arrow svg { width: 2rem; }
   .tv-image-wrap { min-height: 32vh; aspect-ratio: 16 / 9; }
   .tv-image-wrap img { max-height: 46vh; }
   .tv-text-panel { min-height: 24vh; }
   .tv-page-mode { max-height: none; }
-  .tv-header, .tv-footer { padding: .75rem 1rem; }
+  .tv-header { padding: .75rem 1rem; }
   .tv-choice-grid { grid-template-columns: 1fr; }
   .tv-menu { overflow-x: auto; justify-content: flex-start; }
   .tv-menu button { min-width: 7rem; }
@@ -91,9 +97,8 @@
   .tv-header strong { font-size: 1.05rem; }
   .tv-header span { font-size: .7rem; }
   .tv-back, .tv-menu-trigger { font-size: .75rem; padding: .5rem; }
-  .tv-footer > button { font-size: 0; gap: 0; }
-  .tv-footer > button svg { width: 1.5rem; }
-  .tv-play-controls { gap: .3rem; }
-  .tv-play-controls button { min-width: 2.5rem; }
+  .tv-reading-area { grid-template-columns: 2.5rem minmax(0, 1fr) 2.5rem; gap: .15rem; }
+  .tv-page-arrow { width: 2.4rem; height: 3.5rem; }
+  .tv-page-arrow svg { width: 1.6rem; }
   .tv-translation, .tv-target { font-size: clamp(1.65rem, 5vw, 2.1rem); }
 }

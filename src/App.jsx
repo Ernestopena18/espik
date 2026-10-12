@@ -8,6 +8,7 @@ import TvReader from "./components/TvReader.jsx";
 // ÍNDICE DE MODIFICACIONES
 // ¿Qué querés aprender?
 // 01 12/10/2026 navegación por control remoto en selección de idioma.
+// 02 12/10/2026 instrucciones de reproducción y consulta de palabras acordes al lector.
 // Elegí un cuento
 // 01 12/10/2026 navegación por control remoto y elección de lectura en selección de cuento.
 
@@ -22,8 +23,8 @@ function LanguagePick({ onPick }) {
         ¿Qué querés aprender?
       </h1>
       <p className="mt-3 max-w-md text-slate-600">
-        Vas a leer cuentos cortos en el idioma que elijas. Podés tocar cualquier
-        palabra para ver qué significa y escuchar cómo suena.
+        Vas a leer cuentos cortos en el idioma que elijas. Tocá el texto para
+        escuchar una frase; desde Opciones podés elegir una palabra y conocerla mejor.
       </p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -48,15 +49,14 @@ function LanguagePick({ onPick }) {
       </div>
 
       <div className="mt-12 space-y-3 border-t border-slate-200 pt-8">
-        <Feature icon={MousePointerClick} title="Tocá cualquier palabra">
-          Traducción, pronunciación y tres ejemplos de uso en otras oraciones.
+        <Feature icon={MousePointerClick} title="Elegí una palabra">
+          Desde Opciones, consultá su significado, pronunciación y ejemplos de uso.
         </Feature>
         <Feature icon={BookOpen} title="Dos formas de leer">
-          Solo en el idioma, o con la traducción de cada oración justo debajo.
+          Por frase o toda la página, con la traducción en español arriba si la querés ver.
         </Feature>
         <Feature icon={Mic} title="Escuchá y repetí">
-          El cuento se narra de corrido y podés dejar un silencio después de cada
-          frase para repetirla en voz alta.
+          Reproducí la frase elegida y ajustá la pausa, la velocidad y las repeticiones.
         </Feature>
       </div>
     </div>
