@@ -162,6 +162,15 @@ contenido web y las ilustraciones incorporados. La voz usa el motor de texto a v
 de Android, porque el WebView de algunas TV no expone Web Speech. El botón Volver
 del control cierra el menú o regresa una página; en el inicio sale de la app.
 
+La APK permite leer los cuentos, ver sus imágenes, consultar el diccionario y
+escuchar la música sin conexión. La narración también puede funcionar sin conexión
+si el televisor tiene instaladas voces locales de español y del idioma elegido;
+algunos motores de voz necesitan descargar esas voces primero o usar una voz de red.
+Las tipografías web se cargan desde Google Fonts cuando hay conexión; sin ella se
+usan las tipografías de respaldo del sistema. Las actualizaciones de cuentos e
+imágenes requieren instalar una APK nueva. El sitio alojado en Vercel sí requiere
+conexión para abrirse.
+
 La app aparece en el inicio de Android TV gracias a su banner y a la categoría
 `LEANBACK_LAUNCHER`. Requiere Android 7 o posterior y voces instaladas para los
 idiomas que se quieran escuchar. El audio y la navegación deben probarse en el

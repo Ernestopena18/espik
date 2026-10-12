@@ -20,6 +20,10 @@
 
 ## Modificación
 
+### Todas las páginas
+
+01 12/10/2026 icono del loro en la pestaña de todas las páginas.
+
 ### ¿Qué querés aprender?
 
 01 12/10/2026 navegación por control remoto en selección de idioma.
