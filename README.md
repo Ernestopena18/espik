@@ -12,9 +12,23 @@ npm install
 npm run dev
 ```
 
+## Páginas y rutas
+
+La app usa URLs directas que se pueden guardar y compartir:
+
+| Ruta | Página |
+| --- | --- |
+| `/` | Inicio y elección de idioma |
+| `/cuentos/en` o `/cuentos/fr` | Catálogo por idioma |
+| `/cuentos/:idioma/:cuento` | Portada y elección de modo de lectura |
+| `/cuentos/:idioma/:cuento/leer/phrase` | Lectura por frase |
+| `/cuentos/:idioma/:cuento/leer/page` | Lectura de toda la página |
+
+Las rutas y los identificadores desconocidos muestran una página para volver al inicio. Esta primera versión es pública y guarda el contenido en el repositorio; no necesita cuentas ni servicios de datos. `vercel.json` permite abrir o recargar enlaces internos directamente en producción.
+
 ## Subir a Vercel
 
-Vercel detecta Vite solo. No hace falta configurar nada.
+Vercel detecta Vite. El archivo `vercel.json` reescribe las rutas de la app a `index.html` para que funcionen al recargar.
 
 **Opción A — desde la web:** subí el proyecto a un repo de GitHub, entrá a
 vercel.com, "Add New… → Project", elegí el repo y dale Deploy.
@@ -101,9 +115,15 @@ los datos del idioma, no del componente.
 
 ```
 src/
-  App.jsx                    elegir idioma y cuento
+  App.jsx                    tabla de rutas
+  pages/HomePage.jsx         inicio y elección de idioma
+  pages/StoriesPage.jsx      catálogo por idioma
+  pages/StoryPage.jsx        portada y elección del modo
+  pages/ReaderPage.jsx       ruta de lectura y validación
+  pages/NotFoundPage.jsx     página de enlace desconocido
   components/TvReader.jsx    lector para TV, frases, menú y ficha de palabra
   data/storyImages.js        imágenes por frase disponibles
+  lib/useTvListNavigation.js flechas del control remoto en listas
   lib/useMusic.js            música instrumental generada en el navegador
   lib/tokenize.js      corta oraciones en palabras y les asigna lema
   lib/useSpeech.js     voces, lectura y subrayado palabra por palabra
@@ -113,8 +133,9 @@ src/
 
 Abrí la app en el navegador del televisor y elegí el modo **Por frase** o
 **Toda la página**. La imagen ocupa la izquierda y el texto la derecha; en
-pantallas angostas, la imagen queda arriba. Las primeras cinco frases de
-«El gatito gris» tienen ilustración; se comparte entre francés e inglés.
+pantallas angostas, la imagen queda arriba. Cada cuento muestra en su portada
+la misma ilustración de su primera frase. Las imágenes se comparten entre
+las versiones en francés e inglés.
 
 - **Izquierda/Derecha:** página anterior o siguiente.
 - **Abajo/Arriba:** frase siguiente o anterior. Desde la primera frase de
@@ -146,8 +167,9 @@ servicios externos.
 - **Las voces del sistema no suenan a narrador.** El salto de calidad real
   es audio pregenerado con TTS neuronal, que además devuelve marcas de
   tiempo por palabra y resuelve el subrayado en todos los dispositivos.
-- **Ilustraciones incompletas.** Solo las primeras cinco frases del cuento
-  de Mimi tienen imágenes; las demás escenas conservan una descripción.
+- **Ilustraciones incompletas.** Mimi tiene imágenes para sus primeras cinco
+  frases; los otros cuentos tienen imagen en la primera frase. Las demás
+  escenas conservan una descripción.
 - **Audio del televisor.** La narración depende de las voces que exponga el
   navegador del dispositivo mediante Web Speech; algunos televisores no
   ofrecen voces para todos los acentos.

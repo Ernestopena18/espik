@@ -13,6 +13,8 @@ import "../tv.css";
 // ÍNDICE DE MODIFICACIONES
 // 01 12/10/2026 flechas de navegación junto al texto y reproducción al presionarlo, sin barra inferior.
 // 02 12/10/2026 prueba de velocidad, pausa y repeticiones desde el modal de ajustes.
+// 03 12/10/2026 primera ilustración disponible en los cuatro cuentos restantes.
+// 04 12/10/2026 lector separado de la elección de modo y conectado a URLs de lectura.
 
 const MENU = [
   { id: "word", label: "Elegir palabra", icon: Underline },
@@ -83,39 +85,7 @@ function WordDialog({ entry, surface, lemma, lang, onClose, onSpeak }) {
   );
 }
 
-function Choice({ story, onChoose, onExit }) {
-  const onKeyDown = (event) => {
-    if (event.key === "Escape" || event.key === "Backspace") { event.preventDefault(); onExit(); }
-    if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
-    event.preventDefault();
-    const buttons = [...document.querySelectorAll("[data-tv-choice]")];
-    const index = buttons.indexOf(document.activeElement);
-    const direction = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
-    buttons[Math.max(0, Math.min(buttons.length - 1, index + direction))]?.focus();
-  };
-  return (
-    <main className="tv-choice" onKeyDown={onKeyDown}>
-      <button className="tv-back" onClick={onExit}><ArrowLeft size={20} /> Cuentos</button>
-      <div className="tv-choice-content">
-        <p className="tv-eyebrow">{story.title_es}</p>
-        <h1>{story.title}</h1>
-        <p>¿Cómo querés leer este cuento?</p>
-        <div className="tv-choice-grid">
-          <button autoFocus data-tv-choice onClick={() => onChoose("phrase")}>
-            <strong>Por frase</strong><span>Una imagen y una frase por vez.</span>
-          </button>
-          <button data-tv-choice onClick={() => onChoose("page")}>
-            <strong>Toda la página</strong><span>Todas las frases a la derecha; la imagen cambia con la frase seleccionada.</span>
-          </button>
-        </div>
-        <small>En TV: izquierda/derecha cambia de página; arriba/abajo cambia de frase; botón central reproduce o detiene.</small>
-      </div>
-    </main>
-  );
-}
-
-export default function TvReader({ lang, story, onExit }) {
-  const [readingMode, setReadingMode] = useState(null);
+export default function TvReader({ lang, story, readingMode, onExit }) {
   const [page, setPage] = useState(0);
   const [sentence, setSentence] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -232,7 +202,6 @@ export default function TvReader({ lang, story, onExit }) {
 
   useEffect(() => {
     const handleKey = (event) => {
-      if (!readingMode) return;
       const key = event.key;
       if (word) {
         if (key === "Escape" || key === "Backspace") { event.preventDefault(); setWord(null); }
@@ -289,7 +258,7 @@ export default function TvReader({ lang, story, onExit }) {
       } else if (key === "Escape" || key === "Backspace") {
         event.preventDefault();
         if (wordSelection) setWordSelection(false);
-        else { stopAudio(); music.stop(); setReadingMode(null); }
+        else { stopAudio(); music.stop(); onExit(); }
       }
     };
     window.addEventListener("keydown", handleKey);
@@ -300,15 +269,13 @@ export default function TvReader({ lang, story, onExit }) {
     if (word) document.querySelector("[data-word-dialog] button")?.focus();
   }, [word]);
 
-  useEffect(() => { if (readingMode && !menuOpen && !word) rootRef.current?.focus(); }, [readingMode]);
+  useEffect(() => { rootRef.current?.focus(); }, []);
   useEffect(() => { if (panel) document.querySelector(".tv-settings-panel button")?.focus(); }, [panel]);
-
-  if (!readingMode) return <Choice story={story} onChoose={setReadingMode} onExit={onExit} />;
 
   return (
     <div className="tv-reader" ref={rootRef} tabIndex={-1}>
       <header className="tv-header">
-        <button className="tv-back" onClick={() => { stopAudio(); music.stop(); setReadingMode(null); }}><ArrowLeft size={20} /> Cuentos</button>
+        <button className="tv-back" onClick={() => { stopAudio(); music.stop(); onExit(); }}><ArrowLeft size={20} /> Modos de lectura</button>
         <div><strong>{story.title}</strong><span>Página {page + 1} de {story.pages.length} · {readingMode === "phrase" ? "Por frase" : "Toda la página"}</span></div>
         <button className="tv-menu-trigger" onClick={() => setMenuOpen(true)}>Opciones ↑ ↑</button>
       </header>

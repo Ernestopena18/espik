@@ -10,6 +10,24 @@ body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
 
+.language-card--en {
+  --flag-primary: #012169;
+  --flag-accent: #c8102e;
+  --tw-ring-color: var(--flag-accent);
+  border-color: #b9c8df;
+  background: linear-gradient(135deg, #f4f7fd, #fff 62%, #fff3f4);
+}
+
+.language-card--fr {
+  --flag-primary: #0055a4;
+  --flag-accent: #ef4135;
+  --tw-ring-color: var(--flag-accent);
+  border-color: #bad0e7;
+  background: linear-gradient(135deg, #f1f7ff, #fff 55%, #fff5f3);
+}
+
+.language-card:hover { border-color: var(--flag-accent); }
+
 /* Deja respirar el reproductor fijo en celulares con notch. */
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
