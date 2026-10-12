@@ -9,13 +9,14 @@ import TvReader from "./components/TvReader.jsx";
 // ¿Qué querés aprender?
 // 01 12/10/2026 navegación por control remoto en selección de idioma.
 // 02 12/10/2026 instrucciones de reproducción y consulta de palabras acordes al lector.
+// 03 12/10/2026 presentación de las tres funciones principales en tarjetas horizontales.
 // Elegí un cuento
 // 01 12/10/2026 navegación por control remoto y elección de lectura en selección de cuento.
 
 /* ---------- 1. ¿Qué querés aprender? ---------- */
 function LanguagePick({ onPick }) {
   return (
-    <div className="mx-auto max-w-2xl px-5 py-14">
+    <div className="mx-auto max-w-5xl px-5 py-14">
       <p className="mb-3 text-[0.7rem] font-medium uppercase tracking-[0.22em] text-rose-400">
         Cuentos para aprender idiomas
       </p>
@@ -27,7 +28,7 @@ function LanguagePick({ onPick }) {
         escuchar una frase; desde Opciones podés elegir una palabra y conocerla mejor.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-2">
         {Object.values(LANGUAGES).map((lang, index) => (
           <button
             key={lang.code}
@@ -48,7 +49,7 @@ function LanguagePick({ onPick }) {
         ))}
       </div>
 
-      <div className="mt-12 space-y-3 border-t border-slate-200 pt-8">
+      <div className="mt-12 grid gap-4 border-t border-slate-200 pt-8 md:grid-cols-3">
         <Feature icon={MousePointerClick} title="Elegí una palabra">
           Desde Opciones, consultá su significado, pronunciación y ejemplos de uso.
         </Feature>
@@ -65,12 +66,12 @@ function LanguagePick({ onPick }) {
 
 function Feature({ icon: Icon, title, children }) {
   return (
-    <div className="flex gap-3">
-      <Icon className="mt-0.5 shrink-0 text-sky-600" size={18} />
-      <p className="text-sm text-slate-600">
-        <span className="font-medium text-slate-900">{title}. </span>
-        {children}
-      </p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+        <Icon size={20} aria-hidden="true" />
+      </div>
+      <h2 className="font-serif text-lg font-semibold text-slate-900">{title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-slate-600">{children}</p>
     </div>
   );
 }

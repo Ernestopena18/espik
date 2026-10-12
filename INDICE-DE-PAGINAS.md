@@ -12,6 +12,7 @@
 
 01 12/10/2026 navegación por control remoto en selección de idioma.
 02 12/10/2026 instrucciones de reproducción y consulta de palabras acordes al lector.
+03 12/10/2026 presentación de las tres funciones principales en tarjetas horizontales.
 
 ### Elegí un cuento
 
