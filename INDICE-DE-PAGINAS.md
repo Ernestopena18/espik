@@ -20,3 +20,4 @@
 ### Lector para TV
 
 01 12/10/2026 flechas de navegación junto al texto y reproducción al presionarlo, sin barra inferior.
+02 12/10/2026 prueba de velocidad, pausa y repeticiones desde el modal de ajustes.

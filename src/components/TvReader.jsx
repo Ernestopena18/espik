@@ -12,6 +12,7 @@ import "../tv.css";
 // 01 12/10/2026 creación del lector para TV con control remoto e imágenes por frase.
 // ÍNDICE DE MODIFICACIONES
 // 01 12/10/2026 flechas de navegación junto al texto y reproducción al presionarlo, sin barra inferior.
+// 02 12/10/2026 prueba de velocidad, pausa y repeticiones desde el modal de ajustes.
 
 const MENU = [
   { id: "word", label: "Elegir palabra", icon: Underline },
@@ -181,8 +182,8 @@ export default function TvReader({ lang, story, onExit }) {
     else if (next >= pageData.sentences.length && page < story.pages.length - 1) select(page + 1, 0);
   };
 
-  const playCurrent = () => {
-    if (playing) { stopAudio(); return; }
+  const playCurrent = (restart = false) => {
+    if (playing && !restart) { stopAudio(); return; }
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     stopAudio();
     const run = audioRun.current;
@@ -366,6 +367,11 @@ export default function TvReader({ lang, story, onExit }) {
             <label className="tv-setting-line"><span>Velocidad de lectura: {speed.toFixed(2)}×</span><input type="range" min="0.5" max="1.2" step="0.05" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} /></label>
             <label className="tv-setting-line"><span>Pausa entre español y {lang.label.toLowerCase()}: {gap.toFixed(1)} s</span><input type="range" min="0" max="3" step="0.1" value={gap} onChange={(e) => setGap(Number(e.target.value))} /></label>
             <h3>Veces que se repite cada frase</h3><div className="tv-option-row">{[1, 2, 3].map((n) => <button key={n} className={repeats === n ? "selected" : ""} onClick={() => setRepeats(n)}>{n}×</button>)}</div>
+            <div className="tv-preview-controls">
+              <button type="button" onClick={() => playCurrent(true)}><Volume2 size={20} /> {playing ? "Probar de nuevo" : "Probar ajustes"}</button>
+              {playing && <button type="button" onClick={stopAudio}>Detener prueba</button>}
+            </div>
+            <p className="tv-muted" aria-live="polite">{playing ? "Reproduciendo la frase actual con estos ajustes." : "Escuchá la frase actual sin salir de este menú."}</p>
           </>}
           {panel === "music" && <>
             <p className="tv-muted">Si querés poner música, elegí la que te guste para leer y aprender a tu gusto.</p>

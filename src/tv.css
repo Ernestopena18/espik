@@ -64,6 +64,9 @@
 .tv-option-row { display: flex; flex-wrap: wrap; gap: .65rem; }
 .tv-option-row button, .tv-music-controls button { border: 1px solid #cbd5e1; border-radius: .75rem; padding: .7rem 1rem; background: white; font-weight: 600; }
 .tv-option-row .selected, .tv-music-controls button { background: #0284c7; border-color: #0284c7; color: white; }
+.tv-preview-controls { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+.tv-preview-controls button { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid #0284c7; border-radius: .75rem; padding: .8rem 1.15rem; background: #0284c7; color: white; font-weight: 700; }
+.tv-preview-controls button + button { background: white; color: #0369a1; }
 .tv-setting-line { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; font-size: 1.1rem; }
 .tv-setting-line input[type=range] { width: min(45%, 280px); accent-color: #0284c7; }
 .tv-setting-line input[type=checkbox] { width: 1.5rem; height: 1.5rem; accent-color: #0284c7; }

@@ -123,6 +123,8 @@ pantallas angostas, la imagen queda arriba. Las primeras cinco frases de
 - **Flechas en pantalla:** las de los lados cambian de página; en modo Por frase,
   las de arriba y abajo del texto cambian de frase. No hay barra inferior.
 - **Doble Arriba:** abre el menú de palabra, voz, traducción, velocidad y música.
+- **Velocidad:** el botón Probar ajustes reproduce la frase actual con la
+  velocidad, la pausa y las repeticiones elegidas sin cerrar el menú.
 - **Elegir palabra:** Izquierda/Derecha recorre las palabras; el botón central
   abre la ficha con pronunciación y ejemplos.
 - **Escape/Volver:** cierra la ficha o el menú, o vuelve a elegir modo.
