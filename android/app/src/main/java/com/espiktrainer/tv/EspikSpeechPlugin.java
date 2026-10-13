@@ -19,6 +19,8 @@ public class EspikSpeechPlugin extends Plugin {
     private boolean ready = false;
     private PluginCall pendingCall;
     private volatile String currentRequest;
+    private String activeLanguageTag = "";
+    private String activeVoiceName = "";
 
     @Override
     public void load() {
@@ -93,10 +95,14 @@ public class EspikSpeechPlugin extends Plugin {
         String requestId = call.getString("requestId", "");
         if (text.isEmpty() || requestId.isEmpty()) { call.reject("Falta la frase o su identificador."); return; }
         Locale locale = Locale.forLanguageTag(langTag);
-        int languageResult = tts.setLanguage(locale);
-        if (languageResult == TextToSpeech.LANG_MISSING_DATA || languageResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-            call.reject("Esta TV no tiene instalada una voz para " + langTag + ".");
-            return;
+        if (!langTag.equalsIgnoreCase(activeLanguageTag)) {
+            int languageResult = tts.setLanguage(locale);
+            if (languageResult == TextToSpeech.LANG_MISSING_DATA || languageResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                call.reject("Esta TV no tiene instalada una voz para " + langTag + ".");
+                return;
+            }
+            activeLanguageTag = langTag;
+            activeVoiceName = "";
         }
         Voice best = null;
         Set<Voice> installed = tts.getVoices();
@@ -104,7 +110,9 @@ public class EspikSpeechPlugin extends Plugin {
             if (voice.getLocale().toLanguageTag().equalsIgnoreCase(langTag) &&
                 (best == null || (best.isNetworkConnectionRequired() && !voice.isNetworkConnectionRequired()))) best = voice;
         }
-        if (best != null) tts.setVoice(best);
+        if (best != null && !best.getName().equals(activeVoiceName) && tts.setVoice(best) != TextToSpeech.ERROR) {
+            activeVoiceName = best.getName();
+        }
         tts.setSpeechRate(call.getFloat("rate", 0.9f));
         tts.setPitch(call.getFloat("pitch", 1.0f));
         currentRequest = requestId;

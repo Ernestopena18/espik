@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowLeft, ChevronLeft, ChevronRight, FastForward, Languages,
   Music2, Underline, UserRound, Volume2, X,
@@ -17,6 +17,7 @@ import "../tv.css";
 // 03 12/10/2026 primera ilustración disponible en los cuatro cuentos restantes.
 // 04 12/10/2026 lector separado de la elección de modo y conectado a URLs de lectura.
 // 05 12/10/2026 lectura en voz alta mediante el motor nativo de Android TV.
+// 06 12/10/2026 desplazamiento de frases, foco de ajustes y menú con pulsación central prolongada.
 
 const MENU = [
   { id: "word", label: "Elegir palabra", icon: Underline },
@@ -25,6 +26,8 @@ const MENU = [
   { id: "speed", label: "Velocidad", icon: FastForward },
   { id: "music", label: "Música", icon: Music2 },
 ];
+
+const isCenterKey = (event) => ["Enter", "NumpadEnter", " ", "Select", "OK"].includes(event.key) || [23, 66].includes(event.keyCode);
 
 function WordText({ text, tokenize, upper, activeWord, onWord, readingIndex }) {
   let wordNumber = -1;
@@ -107,9 +110,13 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
   const music = useMusic();
   const speechRef = useRef(speech);
   const rootRef = useRef(null);
+  const activeLineRef = useRef(null);
   const audioRun = useRef(0);
   const audioTimer = useRef(null);
-  const upTimer = useRef(null);
+  const audioActive = useRef(false);
+  const centerTimer = useRef(null);
+  const centerHeld = useRef(false);
+  const centerLongPress = useRef(false);
   speechRef.current = speech;
 
   const pageData = story.pages[page];
@@ -122,16 +129,22 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
     audioRun.current++;
     if (audioTimer.current) clearTimeout(audioTimer.current);
     audioTimer.current = null;
-    speechRef.current.stop();
+    const stopped = audioActive.current ? speechRef.current.stop() : null;
+    audioActive.current = false;
     setPlaying(false);
+    return stopped;
   };
 
   useEffect(() => () => {
     audioRun.current++;
     if (audioTimer.current) clearTimeout(audioTimer.current);
-    if (upTimer.current) clearTimeout(upTimer.current);
+    if (centerTimer.current) clearTimeout(centerTimer.current);
     speechRef.current.stop();
   }, []);
+
+  useLayoutEffect(() => {
+    if (readingMode === "page") activeLineRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [page, sentence, readingMode]);
 
   const select = (nextPage, nextSentence) => {
     stopAudio();
@@ -155,14 +168,13 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
   };
 
   const playCurrent = (restart = false) => {
-    if (playing && !restart) { stopAudio(); return; }
+    if (audioActive.current && !restart) { stopAudio(); return; }
     if (!isNativeAndroid && (typeof window === "undefined" || !window.speechSynthesis)) return;
-    stopAudio();
+    const stopped = stopAudio();
     const run = audioRun.current;
     const segments = [];
     if (translationLang === "es") segments.push({ text: item[1], langTag: "es-ES", id: "tv-es" });
     for (let i = 0; i < repeats; i++) segments.push({ text: item[0], langTag: speech.accent, id: "tv-target" });
-    setPlaying(true);
     const speakSegment = (index) => {
       if (audioRun.current !== run) return;
       const segment = segments[index];
@@ -173,11 +185,18 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
         onEnd: () => {
           if (audioRun.current !== run) return;
           if (index + 1 < segments.length) audioTimer.current = setTimeout(() => speakSegment(index + 1), index === 0 && translationLang === "es" ? gap * 1000 : 450);
-          else setPlaying(false);
+          else { audioActive.current = false; setPlaying(false); }
         },
       });
     };
-    speakSegment(0);
+    const start = () => {
+      if (audioRun.current !== run) return;
+      audioActive.current = true;
+      setPlaying(true);
+      speakSegment(0);
+    };
+    if (stopped) Promise.resolve(stopped).then(start, start);
+    else start();
   };
 
   const toggleFromText = () => {
@@ -205,6 +224,11 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
   useEffect(() => {
     const handleKey = (event) => {
       const key = event.key;
+      if (!isCenterKey(event) && centerTimer.current) {
+        clearTimeout(centerTimer.current);
+        centerTimer.current = null;
+        centerHeld.current = false;
+      }
       if (word) {
         if (key === "Escape" || key === "Backspace") { event.preventDefault(); setWord(null); }
         return;
@@ -212,12 +236,14 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
       if (panel) {
         if (key === "Escape" || key === "Backspace") { event.preventDefault(); setPanel(null); }
         else if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(key)) {
-          if (event.target instanceof HTMLInputElement && event.target.type === "range") return;
+          if (event.target instanceof HTMLInputElement && event.target.type === "range" && (key === "ArrowLeft" || key === "ArrowRight")) return;
           event.preventDefault();
           const controls = [...document.querySelectorAll(".tv-settings-panel button, .tv-settings-panel input")].filter((control) => !control.disabled);
           const current = controls.indexOf(document.activeElement);
           const direction = key === "ArrowRight" || key === "ArrowDown" ? 1 : -1;
-          controls[(current + direction + controls.length) % controls.length]?.focus();
+          const next = controls[(current + direction + controls.length) % controls.length];
+          next?.focus({ preventScroll: true });
+          next?.scrollIntoView({ block: "nearest", inline: "nearest" });
         }
         return;
       }
@@ -226,45 +252,58 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
         else if (key === "ArrowLeft" || key === "ArrowRight") {
           event.preventDefault();
           setMenuIndex((index) => (index + (key === "ArrowRight" ? 1 : MENU.length - 1)) % MENU.length);
-        } else if (key === "Enter" || key === " " || key === "Select") {
-          event.preventDefault(); openMenuPanel(MENU[menuIndex].id);
+        } else if (isCenterKey(event)) {
+          event.preventDefault();
+          if (!centerHeld.current && !event.repeat) openMenuPanel(MENU[menuIndex].id);
+        }
+        return;
+      }
+      if (isCenterKey(event)) {
+        event.preventDefault();
+        if (!centerHeld.current) {
+          centerHeld.current = true;
+          centerLongPress.current = false;
+          centerTimer.current = setTimeout(() => {
+            centerTimer.current = null;
+            centerLongPress.current = true;
+            setWordSelection(false);
+            setMenuOpen(true);
+          }, 2000);
         }
         return;
       }
       if (key === "ArrowUp") {
         event.preventDefault();
         if (event.repeat) return;
-        if (upTimer.current) {
-          clearTimeout(upTimer.current);
-          upTimer.current = null;
-          setMenuOpen(true);
-        } else {
-          upTimer.current = setTimeout(() => {
-            upTimer.current = null;
-            moveSentence(-1);
-          }, 320);
-        }
+        moveSentence(-1);
       } else if (key === "ArrowDown") {
         event.preventDefault();
-        if (upTimer.current) { clearTimeout(upTimer.current); upTimer.current = null; }
         moveSentence(1);
       } else if (key === "ArrowLeft" || key === "ArrowRight") {
         event.preventDefault();
         if (wordSelection) { setWordIndex((index) => Math.max(0, Math.min(words.length - 1, index + (key === "ArrowRight" ? 1 : -1)))); rootRef.current?.focus(); }
         else movePage(key === "ArrowRight" ? 1 : -1);
-      } else if (key === "Enter" || key === " " || key === "Select") {
-        if (event.target instanceof HTMLElement && event.target.closest("button, input, select") && event.target !== document.body) return;
-        event.preventDefault();
-        if (wordSelection && words[wordIndex]) showWord(words[wordIndex]);
-        else playCurrent();
       } else if (key === "Escape" || key === "Backspace") {
         event.preventDefault();
         if (wordSelection) setWordSelection(false);
         else { stopAudio(); music.stop(); onExit(); }
       }
     };
+    const handleKeyUp = (event) => {
+      if (!isCenterKey(event) || !centerHeld.current) return;
+      event.preventDefault();
+      centerHeld.current = false;
+      if (centerTimer.current) clearTimeout(centerTimer.current);
+      centerTimer.current = null;
+      if (centerLongPress.current) { centerLongPress.current = false; return; }
+      const control = event.target instanceof HTMLElement ? event.target.closest("button") : null;
+      if (control && rootRef.current?.contains(control)) control.click();
+      else if (wordSelection && words[wordIndex]) showWord(words[wordIndex]);
+      else playCurrent();
+    };
     window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => { window.removeEventListener("keydown", handleKey); window.removeEventListener("keyup", handleKeyUp); };
   });
 
   useEffect(() => {
@@ -279,7 +318,7 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
       <header className="tv-header">
         <button className="tv-back" onClick={() => { stopAudio(); music.stop(); onExit(); }}><ArrowLeft size={20} /> Modos de lectura</button>
         <div><strong>{story.title}</strong><span>Página {page + 1} de {story.pages.length} · {readingMode === "phrase" ? "Por frase" : "Toda la página"}</span></div>
-        <button className="tv-menu-trigger" onClick={() => setMenuOpen(true)}>Opciones ↑ ↑</button>
+        <button className="tv-menu-trigger" onClick={() => setMenuOpen(true)}>Opciones · OK 2 s</button>
       </header>
 
       <main className="tv-reading-area">
@@ -295,7 +334,7 @@ export default function TvReader({ lang, story, readingMode, onExit }) {
               {readingMode === "phrase" ? (
                 <Sentence item={item} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection ? wordIndex : null} onWord={wordSelection ? showWord : toggleFromText} readingIndex={readingIndex} />
               ) : pageData.sentences.map((line, i) => (
-                <div key={i} className={`tv-page-line ${i === sentence ? "tv-page-line-active" : ""}`} onClick={() => i === sentence ? toggleFromText() : select(page, i)}>
+                <div key={i} ref={i === sentence ? activeLineRef : null} className={`tv-page-line ${i === sentence ? "tv-page-line-active" : ""}`} onClick={() => i === sentence ? toggleFromText() : select(page, i)}>
                   <span className="tv-line-number">{i + 1}</span>
                   <div><Sentence item={line} tokenize={lang.tokenize} upper={upper} showWritten={translationLang === "es" && showWritten} selectedWord={wordSelection && i === sentence ? wordIndex : null} onWord={wordSelection && i === sentence ? showWord : () => i === sentence ? toggleFromText() : select(page, i)} readingIndex={i === sentence ? readingIndex : null} /></div>
                 </div>

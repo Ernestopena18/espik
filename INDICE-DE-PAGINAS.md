@@ -47,6 +47,7 @@
 03 12/10/2026 primera ilustración disponible en los cuatro cuentos restantes.
 04 12/10/2026 lector separado de la elección de modo y conectado a URLs de lectura.
 05 12/10/2026 lectura en voz alta mediante el motor nativo de Android TV.
+06 12/10/2026 desplazamiento de frases, foco de ajustes y menú con pulsación central prolongada.
 
 ### Presentación del cuento
 

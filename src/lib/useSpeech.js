@@ -26,7 +26,8 @@ export function useSpeech(lang, tokenize) {
   const timers = useRef([]);
   const session = useRef(0);
   const gotBoundary = useRef(false);
-  const nativeHandles = useRef([]);
+  const nativeReady = useRef(null);
+  const nativePlayback = useRef(null);
 
   useEffect(() => { setAccent(lang.accents[0][0]); }, [lang]);
 
@@ -45,6 +46,31 @@ export function useSpeech(lang, tokenize) {
     load();
     window.speechSynthesis.onvoiceschanged = load;
     return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  useEffect(() => {
+    if (!isNativeAndroid) return;
+    let disposed = false;
+    let handles = [];
+    const ready = Promise.all([
+      NativeSpeech.addListener("speechProgress", (event) => {
+        const current = nativePlayback.current;
+        if (!current || event.requestId !== current.requestId || current.session !== session.current) return;
+        gotBoundary.current = true;
+        clearTimers();
+        const i = tokenAtChar(current.tokens, current.starts, event.charIndex);
+        if (i !== null) setPlaying({ id: current.id, index: i });
+      }),
+      NativeSpeech.addListener("speechFinished", (event) => {
+        const current = nativePlayback.current;
+        if (current && event.requestId === current.requestId) current.finish();
+      }),
+    ]).then((registered) => {
+      if (disposed) registered.forEach((handle) => handle.remove());
+      else handles = registered;
+    });
+    nativeReady.current = ready;
+    return () => { disposed = true; ready.then(() => handles.forEach((handle) => handle.remove())); };
   }, []);
 
   const chooseVoice = useCallback((langTag) => {
@@ -66,9 +92,9 @@ export function useSpeech(lang, tokenize) {
   const stop = useCallback(() => {
     session.current++;
     clearTimers();
-    nativeHandles.current.forEach((handle) => handle.remove());
-    nativeHandles.current = [];
-    const stopped = isNativeAndroid ? NativeSpeech.stop().catch(() => {}) : undefined;
+    const hadNativePlayback = !!nativePlayback.current;
+    nativePlayback.current = null;
+    const stopped = isNativeAndroid && hadNativePlayback ? NativeSpeech.stop().catch(() => {}) : undefined;
     if (!isNativeAndroid && typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
     setPlaying(null);
     return stopped;
@@ -78,7 +104,11 @@ export function useSpeech(lang, tokenize) {
 
   const speak = useCallback((text, { id, langTag, rate = 0.9, onEnd } = {}) => {
     if (!isNativeAndroid && (typeof window === "undefined" || !window.speechSynthesis)) return;
-    const stopped = stop();
+    if (isNativeAndroid) {
+      session.current++;
+      clearTimers();
+      nativePlayback.current = null;
+    } else stop();
     const mySession = session.current;
     const t0 = performance.now();
 
@@ -89,8 +119,7 @@ export function useSpeech(lang, tokenize) {
     const finish = () => {
       if (mySession !== session.current) return;
       clearTimers();
-      nativeHandles.current.forEach((handle) => handle.remove());
-      nativeHandles.current = [];
+      nativePlayback.current = null;
       setPlaying(null);
       onEnd?.(performance.now() - t0);
     };
@@ -98,23 +127,10 @@ export function useSpeech(lang, tokenize) {
     if (isNativeAndroid) {
       const requestId = String(mySession);
       gotBoundary.current = false;
+      nativePlayback.current = { requestId, session: mySession, id, tokens, starts, finish };
       setPlaying({ id, index: null });
-      Promise.all([
-        NativeSpeech.addListener("speechProgress", (event) => {
-          if (event.requestId !== requestId || mySession !== session.current) return;
-          gotBoundary.current = true;
-          clearTimers();
-          const i = tokenAtChar(tokens, starts, event.charIndex);
-          if (i !== null) setPlaying({ id, index: i });
-        }),
-        NativeSpeech.addListener("speechFinished", (event) => {
-          if (event.requestId === requestId) finish();
-        }),
-        stopped,
-      ]).then(([progressHandle, finishedHandle]) => {
-        const handles = [progressHandle, finishedHandle];
-        if (mySession !== session.current) { handles.forEach((handle) => handle.remove()); return; }
-        nativeHandles.current = handles;
+      Promise.resolve(nativeReady.current).then(() => {
+        if (mySession !== session.current) return;
         NativeSpeech.speak({ text, langTag, rate, pitch: gender === "m" ? 0.8 : 1.05, requestId }).catch(finish);
       }).catch(finish);
       timers.current.push(setTimeout(() => {

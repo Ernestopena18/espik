@@ -139,13 +139,16 @@ las versiones en francés e inglés.
 
 - **Izquierda/Derecha:** página anterior o siguiente.
 - **Abajo/Arriba:** frase siguiente o anterior. Desde la primera frase de
-  una página, Arriba vuelve a la última frase de la página anterior.
+  una página, Arriba vuelve a la última frase de la página anterior. En el modo
+  Toda la página, la lista se desplaza para mantener visible la frase elegida.
 - **Botón central o toque en el texto:** reproduce o detiene la frase seleccionada.
 - **Flechas en pantalla:** las de los lados cambian de página; en modo Por frase,
   las de arriba y abajo del texto cambian de frase. No hay barra inferior.
-- **Doble Arriba:** abre el menú de palabra, voz, traducción, velocidad y música.
+- **Mantener el botón central 2 segundos:** abre el menú de palabra, voz,
+  traducción, velocidad y música. Arriba vuelve a la frase anterior sin espera.
 - **Velocidad:** el botón Probar ajustes reproduce la frase actual con la
-  velocidad, la pausa y las repeticiones elegidas sin cerrar el menú.
+  velocidad, la pausa y las repeticiones elegidas sin cerrar el menú. En las
+  barras, Izquierda/Derecha cambia el valor y Arriba/Abajo pasa a otro control.
 - **Elegir palabra:** Izquierda/Derecha recorre las palabras; el botón central
   abre la ficha con pronunciación y ejemplos.
 - **Escape/Volver:** cierra la ficha o el menú, o vuelve a elegir modo.

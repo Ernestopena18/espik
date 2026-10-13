@@ -34,8 +34,8 @@
 .tv-word { font: inherit; color: inherit; border-radius: .25rem; padding: 0 .03em; text-align: left; }
 .tv-word:hover, .tv-word-selected { background: #fef08a; text-decoration: underline; text-decoration-thickness: .07em; }
 .tv-word-reading { background: #bae6fd; }
-.tv-page-mode { justify-content: flex-start; padding: 1rem; max-height: min(67vh, 780px); }
-.tv-page-line { display: flex; align-items: flex-start; gap: .8rem; padding: .75rem 1rem; border-radius: .9rem; cursor: pointer; border: 2px solid transparent; }
+.tv-page-mode { justify-content: flex-start; padding: 1rem; max-height: min(67vh, 780px); scroll-padding-block: 1rem; overscroll-behavior: contain; }
+.tv-page-line { display: flex; flex-shrink: 0; align-items: flex-start; gap: .8rem; padding: .75rem 1rem; scroll-margin-block: 1rem; border-radius: .9rem; cursor: pointer; border: 2px solid transparent; }
 .tv-page-line-active { border-color: #38bdf8; background: #f0f9ff; }
 .tv-line-number { color: #64748b; font-weight: 700; font-size: 1rem; line-height: 2; }
 .tv-page-line > div { min-width: 0; }
@@ -58,7 +58,7 @@
 .tv-menu { display: flex; justify-content: center; gap: .7rem; padding: 1.25rem 3vw; background: white; box-shadow: 0 10px 30px #0f172a20; }
 .tv-menu button { min-width: 9rem; padding: .75rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .45rem; border-radius: 1rem; color: #334155; border: 2px solid transparent; font-size: 1rem; font-weight: 600; }
 .tv-menu .tv-menu-selected, .tv-menu button:hover { border-color: #0284c7; background: #e0f2fe; }
-.tv-settings-panel, .tv-dialog { position: relative; width: min(760px, 92vw); max-height: 75vh; margin: 2rem auto; overflow-y: auto; border-radius: 1.4rem; padding: clamp(1.5rem, 3vw, 3rem); background: white; box-shadow: 0 20px 40px #0f172a30; }
+.tv-settings-panel, .tv-dialog { position: relative; width: min(760px, 92vw); max-height: 75vh; margin: 2rem auto; overflow-y: auto; scroll-padding-block: 1.5rem; border-radius: 1.4rem; padding: clamp(1.5rem, 3vw, 3rem); background: white; box-shadow: 0 20px 40px #0f172a30; }
 .tv-settings-panel h2, .tv-dialog h2 { font: 600 clamp(1.8rem, 2.5vw, 2.7rem) Georgia, serif; margin: 0 2rem 1.5rem 0; }
 .tv-settings-panel h3, .tv-dialog h3 { margin: 1.5rem 0 .6rem; font-size: 1.1rem; font-weight: 700; }
 .tv-close { position: absolute; top: 1.2rem; right: 1.2rem; padding: .3rem; border-radius: 50%; }
